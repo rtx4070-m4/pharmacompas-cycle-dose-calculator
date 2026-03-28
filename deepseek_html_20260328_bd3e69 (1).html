@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>PharmaCompas: Cycle Designer & Dose Calculator | Educational Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #e9f0f5 0%, #dce3ec 100%);
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, 'Roboto', sans-serif;
+            padding: 2rem 1.5rem;
+            color: #1a2c3e;
+        }
+
+        /* main container */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        /* header & disclaimer */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #1a472a, #0e2a3b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.3px;
+        }
+
+        .header p {
+            color: #2c4b5f;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        .disclaimer {
+            background: #fff6e0;
+            border-left: 5px solid #e67e22;
+            padding: 0.9rem 1.2rem;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            color: #7a5a2c;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .disclaimer strong {
+            color: #b95f0e;
+        }
+
+        /* tabs styling */
+        .tabs {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #cbdbe2;
+            padding-bottom: 0.5rem;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #3a5e72;
+            background: #eef3f8;
+        }
+
+        .tab-btn.active {
+            background: #1e4a6b;
+            color: white;
+            box-shadow: 0 6px 12px rgba(0,32,64,0.15);
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fade 0.2s ease;
+        }
+
+        .tab-pane.active-pane {
+            display: block;
+        }
+
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(6px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        /* cards & UI */
+        .card {
+            background: white;
+            border-radius: 28px;
+            padding: 1.8rem;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            transition: box-shadow 0.2s;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1e4663;
+            border-left: 5px solid #2c9b6e;
+            padding-left: 1rem;
+        }
+
+        .btn {
+            background: #1f6e43;
+            border: none;
+            color: white;
+            padding: 0.6rem 1.4rem;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-secondary {
+            background: #2c5f8a;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid #2c9b6e;
+            color: #1f6e43;
+        }
+
+        .btn-outline:hover {
+            background: #e6f4ef;
+        }
+
+        .btn-danger {
+            background: #b3413a;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .compound-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: flex-end;
+            margin-bottom: 1rem;
+            background: #f8fafd;
+            padding: 1rem;
+            border-radius: 24px;
+            transition: all 0.1s;
+        }
+
+        .compound-row .field {
+            flex: 1;
+            min-width: 130px;
+        }
+
+        .compound-row label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #2c6b4f;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .compound-row select, .compound-row input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid #cfdfea;
+            background: white;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .remove-row {
+            background: #f0c0bc;
+            color: #9b2f2a;
+            border: none;
+            border-radius: 30px;
+            padding: 0.4rem 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1.2rem;
+        }
+
+        .result-box {
+            background: #eef2f7;
+            border-radius: 24px;
+            padding: 1.2rem;
+            margin-top: 1.5rem;
+            border: 1px solid #d0e2ef;
+        }
+
+        .result-stats {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .pct-plan {
+            background: #e2f0ea;
+            padding: 1rem;
+            border-radius: 20px;
+            margin-top: 1rem;
+        }
+
+        hr {
+            margin: 1.2rem 0;
+            border-color: #cddfea;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 1rem;
+            }
+            .compound-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .remove-row {
+                align-self: flex-start;
+            }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2.5rem;
+            font-size: 0.7rem;
+            color: #5d7180;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>💊 PharmaCompas</h1>
+        <p>Anabolic cycle planner · PCT assistant · Drug dose engine</p>
+    </div>
+    <div class="disclaimer">
+        ⚠️ <strong>Educational & informational tool only</strong> — This calculator does NOT replace medical or clinical advice. Anabolic steroids and related compounds should only be used under legitimate medical supervision. Misuse may cause severe health risks. All calculations are based on general pharmacokinetic models.
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="cycleTab">🏋️ Cycle Designer + PCT</button>
+        <button class="tab-btn" data-tab="doseTab">💊 Drug Dose Calculator</button>
+    </div>
+
+    <!-- TAB 1: CYCLE BUILDER & PCT -->
+    <div id="cycleTab" class="tab-pane active-pane">
+        <div class="card">
+            <h2>📌 Anabolic cycle builder</h2>
+            <p style="margin-bottom: 1rem;">Add compounds, weekly dosage & duration. The tool computes total load and suggests a PCT protocol based on cycle severity.</p>
+            <div id="compoundsContainer">
+                <!-- dynamic rows will appear here -->
+            </div>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0 0.5rem;">
+                <button id="addCompoundBtn" class="btn">+ Add compound</button>
+                <button id="resetCycleBtn" class="btn-outline btn">🗑 Reset cycle</button>
+            </div>
+            <div class="result-box">
+                <div class="result-stats">
+                    <div><strong>📊 Total weekly dose:</strong> <span id="totalWeeklyMg">0</span> mg</div>
+                    <div><strong>⏱️ Total cycle dose:</strong> <span id="totalCycleMg">0</span> mg</div>
+                    <div><strong>🗓️ Longest duration:</strong> <span id="maxWeeks">0</span> weeks</div>
+                </div>
+                <button id="generatePctBtn" class="btn-secondary btn" style="margin: 0.5rem 0 0.5rem;">🧪 Generate PCT recommendation</button>
+                <div id="pctOutput" class="pct-plan" style="margin-top: 1rem;">
+                    <strong>📋 PCT plan:</strong> <span id="pctText">Click "Generate PCT" to see post-cycle therapy protocol.</span>
+                </div>
+                <div id="pctWarnings" style="font-size: 0.8rem; margin-top: 0.6rem; color: #a5452c;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: DRUG DOSE CALCULATOR -->
+    <div id="doseTab" class="tab-pane">
+        <div class="card">
+            <h2>💊 Drug dose calculator (mg/kg based)</h2>
+            <p>Calculate single dose, daily total, and full course based on body weight.</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 1.2rem; margin: 1.5rem 0;">
+                <div style="flex:1; min-width: 150px;">
+                    <label>⚖️ Weight (kg) *</label>
+                    <input type="number" id="weightKg" placeholder="e.g., 80" value="80" step="any">
+                </div>
+                <div style="flex:1; min-width: 160px;">
+                    <label>💊 Drug name (optional)</label>
+                    <input type="text" id="drugName" placeholder="e.g., Testosterone, Amoxicillin">
+                </div>
+                <div style="flex:1; min-width: 150px;">
+                    <label>📏 Dose per kg (mg/kg)</label>
+                    <input type="number" id="dosePerKg" placeholder="e.g., 2.5" step="any" value="2">
+                </div>
+                <div style="flex:1; min-width: 150px;">
+                    <label>🔄 Frequency (times/day)</label>
+                    <input type="number" id="frequencyDay" placeholder="e.g., 1" value="1" step="1" min="1">
+                </div>
+                <div style="flex:1; min-width: 150px;">
+                    <label>📅 Duration (days)</label>
+                    <input type="number" id="durationDays" placeholder="e.g., 14" value="7" step="1">
+                </div>
+            </div>
+            <button id="calcDoseBtn" class="btn">Calculate dosage</button>
+            <div class="result-box" style="margin-top: 1.5rem;">
+                <div><strong>💊 Single dose:</strong> <span id="singleDoseResult">—</span> mg</div>
+                <div><strong>📆 Daily total:</strong> <span id="dailyDoseResult">—</span> mg/day</div>
+                <div><strong>📦 Total course (full cycle):</strong> <span id="totalCourseResult">—</span> mg</div>
+                <div><strong>🧪 Drug:</strong> <span id="drugNameDisplay">—</span></div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        ⚕️ All calculations are estimates. For anabolic cycles, PCT timing depends on ester half‑lives. Always consult a medical professional.
+    </footer>
+</div>
+
+<script>
+    // ------------------- CONSTANTS --------------------
+    // Predefined compound list for dropdown
+    const compoundOptions = [
+        "Testosterone Enanthate", "Testosterone Cypionate", "Testosterone Propionate",
+        "Dianabol (Methandienone)", "Deca-Durabolin (Nandrolone Decanoate)",
+        "Trenbolone Acetate", "Anavar (Oxandrolone)", "Winstrol (Stanozolol)",
+        "Equipoise (Boldenone)", "Masteron (Drostanolone)", "Primobolan (Methenolone)",
+        "Anadrol (Oxymetholone)", "Trenbolone Enanthate", "NPP (Nandrolone Phenylpropionate)"
+    ];
+
+    // 19-nor compounds that might need prolactin support
+    const norCompounds = ["Deca-Durabolin", "Trenbolone Acetate", "Trenbolone Enanthate", "NPP"];
+
+    // Global array to store rows data (for easier recalculation)
+    let cycleRows = []; // each row: { compound, weeklyDose, weeks }
+
+    // DOM elements
+    const compoundsContainer = document.getElementById("compoundsContainer");
+    const addCompoundBtn = document.getElementById("addCompoundBtn");
+    const resetCycleBtn = document.getElementById("resetCycleBtn");
+    const generatePctBtn = document.getElementById("generatePctBtn");
+    const totalWeeklyMgSpan = document.getElementById("totalWeeklyMg");
+    const totalCycleMgSpan = document.getElementById("totalCycleMg");
+    const maxWeeksSpan = document.getElementById("maxWeeks");
+    const pctTextSpan = document.getElementById("pctText");
+    const pctWarningsDiv = document.getElementById("pctWarnings");
+
+    // Helper to render all rows from cycleRows
+    function renderRows() {
+        compoundsContainer.innerHTML = "";
+        if (cycleRows.length === 0) {
+            // Show empty state message
+            const emptyMsg = document.createElement("div");
+            emptyMsg.className = "result-box";
+            emptyMsg.style.background = "#f9f6ec";
+            emptyMsg.innerText = "➕ No compounds added. Click '+ Add compound' to start building your cycle.";
+            compoundsContainer.appendChild(emptyMsg);
+            updateCycleTotals();
+            return;
+        }
+
+        cycleRows.forEach((row, idx) => {
+            const rowDiv = document.createElement("div");
+            rowDiv.className = "compound-row";
+            rowDiv.dataset.index = idx;
+
+            // Compound select
+            const compoundField = document.createElement("div");
+            compoundField.className = "field";
+            const compoundLabel = document.createElement("label");
+            compoundLabel.innerText = "Compound";
+            const compoundSelect = document.createElement("select");
+            compoundOptions.forEach(opt => {
+                const option = document.createElement("option");
+                option.value = opt;
+                option.textContent = opt;
+                if (row.compound === opt) option.selected = true;
+                compoundSelect.appendChild(option);
+            });
+            // allow custom compound? optional: add an extra "Other" but we keep preset for simplicity.
+            compoundSelect.addEventListener("change", (e) => {
+                cycleRows[idx].compound = e.target.value;
+                updateCycleTotals();
+            });
+            compoundField.appendChild(compoundLabel);
+            compoundField.appendChild(compoundSelect);
+
+            // Weekly dose input
+            const doseField = document.createElement("div");
+            doseField.className = "field";
+            const doseLabel = document.createElement("label");
+            doseLabel.innerText = "Weekly dose (mg)";
+            const doseInput = document.createElement("input");
+            doseInput.type = "number";
+            doseInput.step = "any";
+            doseInput.value = row.weeklyDose;
+            doseInput.placeholder = "mg/week";
+            doseInput.addEventListener("input", (e) => {
+                let val = parseFloat(e.target.value);
+                if (isNaN(val)) val = 0;
+                cycleRows[idx].weeklyDose = val;
+                updateCycleTotals();
+            });
+            doseField.appendChild(doseLabel);
+            doseField.appendChild(doseInput);
+
+            // Duration weeks
+            const weeksField = document.createElement("div");
+            weeksField.className = "field";
+            const weeksLabel = document.createElement("label");
+            weeksLabel.innerText = "Duration (weeks)";
+            const weeksInput = document.createElement("input");
+            weeksInput.type = "number";
+            weeksInput.step = "1";
+            weeksInput.value = row.weeks;
+            weeksInput.placeholder = "weeks";
+            weeksInput.addEventListener("input", (e) => {
+                let val = parseInt(e.target.value);
+                if (isNaN(val)) val = 0;
+                cycleRows[idx].weeks = val;
+                updateCycleTotals();
+            });
+            weeksField.appendChild(weeksLabel);
+            weeksField.appendChild(weeksInput);
+
+            // remove button
+            const removeBtn = document.createElement("button");
+            removeBtn.innerText = "✖ Remove";
+            removeBtn.className = "remove-row btn-sm";
+            removeBtn.addEventListener("click", () => {
+                cycleRows.splice(idx, 1);
+                renderRows();
+            });
+
+            rowDiv.appendChild(compoundField);
+            rowDiv.appendChild(doseField);
+            rowDiv.appendChild(weeksField);
+            rowDiv.appendChild(removeBtn);
+            compoundsContainer.appendChild(rowDiv);
+        });
+        updateCycleTotals();
+    }
+
+    // Update totals based on cycleRows
+    function updateCycleTotals() {
+        let totalWeekly = 0;
+        let totalCycle = 0;
+        let maxDuration = 0;
+        for (const row of cycleRows) {
+            const weekDose = parseFloat(row.weeklyDose) || 0;
+            const weeks = parseInt(row.weeks) || 0;
+            totalWeekly += weekDose;
+            totalCycle += weekDose * weeks;
+            if (weeks > maxDuration) maxDuration = weeks;
+        }
+        totalWeeklyMgSpan.innerText = totalWeekly.toFixed(1);
+        totalCycleMgSpan.innerText = totalCycle.toFixed(1);
+        maxWeeksSpan.innerText = maxDuration;
+    }
+
+    // PCT generation logic (educational)
+    function generatePCT() {
+        if (cycleRows.length === 0) {
+            pctTextSpan.innerText = "⚠️ No cycle data. Add compounds to receive PCT suggestion.";
+            pctWarningsDiv.innerHTML = "";
+            return;
+        }
+
+        let totalWeekly = 0;
+        let longestWeeks = 0;
+        let hasNor = false;
+        const compoundsUsed = [];
+
+        for (const row of cycleRows) {
+            const dose = parseFloat(row.weeklyDose) || 0;
+            const weeks = parseInt(row.weeks) || 0;
+            totalWeekly += dose;
+            if (weeks > longestWeeks) longestWeeks = weeks;
+            const compoundName = row.compound;
+            compoundsUsed.push(compoundName);
+            if (norCompounds.some(nor => compoundName.includes(nor))) {
+                hasNor = true;
+            }
+        }
+
+        // Determine cycle intensity score: total weekly mg + long duration influence
+        let intensity = "mild";
+        if (totalWeekly > 600 || longestWeeks > 12) intensity = "heavy";
+        else if (totalWeekly > 300 || longestWeeks > 8) intensity = "moderate";
+        
+        // Build PCT recommendation (SERMs based)
+        let pctProtocol = "";
+        if (intensity === "mild") {
+            pctProtocol = "🔹 Mild PCT (3 weeks):\n• Clomiphene (Clomid): 50mg/day first 2 weeks, 25mg/day week 3\n• Tamoxifen (Nolvadex): 20mg/day for 3 weeks\n• Support: liver support & vitamins.";
+        } else if (intensity === "moderate") {
+            pctProtocol = "🔸 Moderate PCT (4 weeks):\n• Clomiphene: 50/50/25/25 mg/day\n• Tamoxifen: 40/40/20/20 mg/day\n• Consider HCG if testicular atrophy was present (last weeks of cycle).\n• Aromatase inhibitor on hand if needed.";
+        } else {
+            pctProtocol = "⚠️ Heavy / High-dose PCT (5-6 weeks recommended):\n• Clomiphene: 50/50/50/25/25 mg/day\n• Tamoxifen: 40/40/40/20/20 mg/day\n• HCG (if not used on-cycle) 500-1000 IU EOD for 2 weeks before SERMs.\n• Monitor estrogen and prolactin.";
+        }
+
+        // Additional warning for 19-nor compounds
+        let norWarning = "";
+        if (hasNor) {
+            norWarning = "⚠️ Note: 19-nor compounds detected (Deca/Tren). Prolactin management may be required. Consider cabergoline (0.25-0.5mg twice weekly) or pramipexole if prolactin-related sides appear. Always consult bloodwork.";
+        } else {
+            norWarning = "✅ No typical 19-nor compounds detected. Standard SERM-based PCT is usually sufficient.";
+        }
+
+        // also add timing note based on esters (general)
+        let timingNote = "⏱️ PCT should ideally begin 2-3 weeks after last injection of long esters (Enanthate, Cypionate, Deca) and 3-5 days after short esters/orals. Adjust accordingly.";
+
+        pctTextSpan.innerHTML = `${pctProtocol}<br><br>${timingNote}`;
+        pctWarningsDiv.innerHTML = norWarning + `<br><strong>Total weekly load:</strong> ${totalWeekly.toFixed(1)} mg | Cycle severity: ${intensity.toUpperCase()}`;
+    }
+
+    // add new row default
+    function addNewRow() {
+        cycleRows.push({
+            compound: "Testosterone Enanthate",
+            weeklyDose: 300,
+            weeks: 10
+        });
+        renderRows();
+    }
+
+    function resetCycle() {
+        cycleRows = [];
+        renderRows();
+        pctTextSpan.innerText = "Click \"Generate PCT\" to see post-cycle therapy protocol.";
+        pctWarningsDiv.innerHTML = "";
+    }
+
+    // ----------- Drug Dose Calculator logic ----------
+    function updateDrugDose() {
+        let weight = parseFloat(document.getElementById("weightKg").value);
+        let dosePerKg = parseFloat(document.getElementById("dosePerKg").value);
+        let freq = parseFloat(document.getElementById("frequencyDay").value);
+        let durationDays = parseFloat(document.getElementById("durationDays").value);
+        let drugNameRaw = document.getElementById("drugName").value.trim();
+
+        if (isNaN(weight) || weight <= 0) {
+            document.getElementById("singleDoseResult").innerText = "❌ Invalid weight";
+            document.getElementById("dailyDoseResult").innerText = "—";
+            document.getElementById("totalCourseResult").innerText = "—";
+            return;
+        }
+        if (isNaN(dosePerKg) || dosePerKg < 0) dosePerKg = 0;
+        if (isNaN(freq) || freq <= 0) freq = 1;
+        if (isNaN(durationDays) || durationDays <= 0) durationDays = 0;
+
+        const singleMg = weight * dosePerKg;
+        const dailyMg = singleMg * freq;
+        const totalMg = dailyMg * durationDays;
+
+        document.getElementById("singleDoseResult").innerText = singleMg.toFixed(2);
+        document.getElementById("dailyDoseResult").innerText = dailyMg.toFixed(2);
+        document.getElementById("totalCourseResult").innerText = totalMg.toFixed(2);
+        document.getElementById("drugNameDisplay").innerHTML = drugNameRaw ? `💊 ${drugNameRaw}` : "custom compound";
+    }
+
+    // ---- EVENT LISTENERS AND INIT ----
+    addCompoundBtn.addEventListener("click", addNewRow);
+    resetCycleBtn.addEventListener("click", resetCycle);
+    generatePctBtn.addEventListener("click", generatePCT);
+    document.getElementById("calcDoseBtn").addEventListener("click", updateDrugDose);
+
+    // Realtime update for drug dose inputs (optional)
+    const doseInputs = ["weightKg", "dosePerKg", "frequencyDay", "durationDays", "drugName"];
+    doseInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("input", updateDrugDose);
+    });
+
+    // TABS logic
+    const tabs = document.querySelectorAll(".tab-btn");
+    const panes = document.querySelectorAll(".tab-pane");
+    tabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const tabId = btn.getAttribute("data-tab");
+            tabs.forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            panes.forEach(pane => {
+                pane.classList.remove("active-pane");
+                if (pane.id === tabId) pane.classList.add("active-pane");
+            });
+            // if drug tab, refresh dose display once
+            if (tabId === "doseTab") updateDrugDose();
+        });
+    });
+
+    // Initialize cycle with 2 example rows (demonstration)
+    function initDemoCycle() {
+        cycleRows = [
+            { compound: "Testosterone Enanthate", weeklyDose: 400, weeks: 12 },
+            { compound: "Dianabol (Methandienone)", weeklyDose: 175, weeks: 6 }  // 25mg/day = 175mg/week
+        ];
+        renderRows();
+        updateCycleTotals();
+    }
+    initDemoCycle();
+
+    // Drug dose default update
+    updateDrugDose();
+
+    // ensure pct warnings on load maybe
+    setTimeout(() => {
+        generatePCT();  // generate PCT for demo cycle
+    }, 100);
+</script>
+</body>
+</html>
